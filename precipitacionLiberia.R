@@ -69,14 +69,35 @@ datosRusia2_dia <- datosRusia2_dia %>% group_by(aNo) %>% mutate(acumulado = cums
 
 filter2014 <- datosRusia2_dia %>% filter(aNo == 2014)
 
-#juntar todos las tablas
+
+##archivo ruso 2017
+datos2017 <- read_delim("Liberia_2017_hasta_octubre.csv", delim = ";")
+datos2017 <- select(datos2017, Time, tR)
+
+datos2017$fechahora <- dmy_hm(datos2017$Time)
+datos2017$fecha <- as.Date(datos2017$fechahora)
+
+#cambiar NA por 0
+datos2017 <- datos2017 %>% replace_na(list(tR = 0))
+
+datos2017_dia <- datos2017 %>% group_by(fecha) %>% summarise((precip = sum(tR)))
+
+colnames(datos2017_dia) <- c("fecha", "lluvia")
+datos2017_dia$juliano <- yday(datos2017_dia$fecha)
+datos2017_dia$aNo <- year(datos2017_dia$fecha)
+
+datos2017_dia <- datos2017_dia %>% group_by(aNo) %>% mutate(acumulado = cumsum(lluvia))
+
+
+##juntar todos las tablas
 datosIMN <- rename(datosIMN, lluvia = precip)
 
 cols_com <- intersect(colnames(datosIMN), colnames(datosRusia_dia))
 datosIMN_limpio <- subset(datosIMN, select = cols_com)
 datos2014_limpio <- subset(filter2014, select = cols_com)
 datos2015_2016 <- subset(datosRusia_dia, select = cols_com)
-datosLiberia <- rbind(datosIMN_limpio, datos2014_limpio, datos2015_2016)
+datos2017_limpio <- subset(datos2017_dia, select = cols_com)
+datosLiberia <- rbind(datosIMN_limpio, datos2014_limpio, datos2015_2016, datos2017_limpio)
 
 ggplot(datosLiberia, aes(x = juliano, y = acumulado, group = aNo)) + geom_line()
 
@@ -99,8 +120,8 @@ ggplot(datosLiberia, aes(x = mes, y = acumulado)) +
   geom_line(aes(group = factor(aNo)), size = 0.1) + 
   geom_line(data = filter(datosLiberia, aNo > 2012), aes(group = factor(aNo), colour = factor(aNo)), size = 1) +
   geom_line(data = datosLiberiaPromedio, aes(x = mes, y = acumulado, colour = "red"), size = 2) +
-  labs( x = "Month", y = "Cumulative precipitation (mm)", title = "Cumulative precipitation at the Liberia International Airport", subtitle = "From 1980 to 2016 (36 years of daily precipitation)") + 
+  labs( x = "Mes", y = "Precipitación acumulada (mm)", title = "Precipitación diaria acumulada para el aeropuerto de Liberia", subtitle = "Desde 1980 hasta octubre de 2017 (más de 36 años de precipitación diaria)") + 
   scale_colour_discrete(name = "",
-                        labels = c("2013", "2014", "2015", "2016", "Average")) +
+                        labels = c("2013", "2014", "2015", "2016", "2017", "Promedio")) +
   scale_x_datetime(labels = date_format("%b"), date_breaks = "1 month")
 
