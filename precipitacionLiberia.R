@@ -125,3 +125,40 @@ ggplot(datosLiberia, aes(x = mes, y = acumulado)) +
                         labels = c("2013", "2014", "2015", "2016", "2017", "Promedio")) +
   scale_x_datetime(labels = date_format("%b"), date_breaks = "1 month")
 
+ggplot(datosLiberia, aes(x = mes, y = acumulado)) + 
+  geom_line(aes(group = factor(aNo)), size = 0.1) + 
+  labs( x = "Mes", y = "Precipitación acumulada (mm)", title = "Precipitación diaria acumulada para el aeropuerto de Liberia", subtitle = "Desde 1980 hasta octubre de 2017 (más de 36 años de precipitación diaria)") +
+  scale_x_datetime(labels = date_format("%b"), date_breaks = "1 month")
+
+
+##exportar datos de Liberia para plataforma
+d_plataforma <- data.frame(
+  dia = day(datosLiberia$fecha), 
+  mes = month(datosLiberia$fecha),
+  aNo = year(datosLiberia$fecha),
+  lluvia = datosLiberia$lluvia)
+
+d_plataforma$fecha <- paste(d_plataforma$dia,d_plataforma$mes, d_plataforma$aNo, sep="/")
+
+d_plataforma <- data.frame(
+  fecha = d_plataforma$fecha,
+  lluvia = d_plataforma$lluvia
+)
+
+write_csv(d_plataforma, "Liberia_plataforma.csv", na = "NA", append = FALSE)
+
+con = dbConnect(pg, user="guillermoduran", password="ca1234", host="localhost", port=5432, dbname="guillermoduran")
+
+
+copy_to(con, nycflights13::flights, "flights",
+        temporary = FALSE, 
+        indexes = list(
+          c("year", "month", "day"), 
+          "carrier", 
+          "tailnum",
+          "dest"
+        )
+)
+
+
+
