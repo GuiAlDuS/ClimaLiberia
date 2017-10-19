@@ -125,11 +125,6 @@ ggplot(datosLiberia, aes(x = mes, y = acumulado)) +
                         labels = c("2013", "2014", "2015", "2016", "2017", "Promedio")) +
   scale_x_datetime(labels = date_format("%b"), date_breaks = "1 month")
 
-ggplot(datosLiberia, aes(x = mes, y = acumulado)) + 
-  geom_line(aes(group = factor(aNo)), size = 0.1) + 
-  labs( x = "Mes", y = "Precipitación acumulada (mm)", title = "Precipitación diaria acumulada para el aeropuerto de Liberia", subtitle = "Desde 1980 hasta octubre de 2017 (más de 36 años de precipitación diaria)") +
-  scale_x_datetime(labels = date_format("%b"), date_breaks = "1 month")
-
 
 ##exportar datos de Liberia para plataforma
 d_plataforma <- data.frame(
